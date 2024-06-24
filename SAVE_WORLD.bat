@@ -2,8 +2,8 @@
 setlocal
 
 REM Warning message
-echo WARNING! This script will replace the local copy of your world. If you want the latest copy type 'y'.
-set /p userInput=Do you want to proceed? (y/n): 
+echo WARNING! This script will replace the remote version of our shared World. Are you sure you want to overwrite? (y/n):
+set /p userInput=Do you want to proceed? (y/n):  
 
 if /i not "%userInput%"=="y" (
     echo Operation aborted.
@@ -11,14 +11,20 @@ if /i not "%userInput%"=="y" (
     exit /b
 )
 
-REM Perform git fetch and pull
-echo "Fetching and pulling the latest updates..."
-git fetch
-git pull
+echo I REPEAT! Are you 100 percent certain that this is script you should be running. Type 'overwrite' if you are ready to replace the world.
+set /p userInput=Type 'overwrite' if you are ready to replace the world: 
+
+if /i not "%userInput%"=="overwrite" (
+    echo Operation aborted.
+    pause
+    exit /b
+)
+
+echo Overwriting....
 
 REM Define the source and destination directories
-set "sourceDir=%~dp0Worlds"
-set "destDir=%USERPROFILE%\AppData\LocalLow\IronGate\Valheim\worlds_local"
+set "sourceDir=%USERPROFILE%\AppData\LocalLow\IronGate\Valheim\worlds_local"
+set "destDir=%~dp0Worlds"
 
 REM Output the directories for debugging purposes
 echo "Source Directory: %sourceDir%"
@@ -31,12 +37,6 @@ if not exist "%sourceDir%" (
     exit /b
 )
 
-REM Create the destination directory if it does not exist
-if not exist "%destDir%" (
-    echo "Destination directory does not exist. Creating directory..."
-    mkdir "%destDir%"
-)
-
 REM Copy files from source to destination, overwriting existing files
 echo "Copying files from '%sourceDir%' to '%destDir%'..."
 xcopy "%sourceDir%\*" "%destDir%\" /Y /R /S
@@ -47,6 +47,10 @@ if %errorlevel% equ 0 (
 ) else (
     echo "Failed to copy files."
 )
+
+git add ./Worlds
+git commit
+git push
 
 pause
 endlocal
